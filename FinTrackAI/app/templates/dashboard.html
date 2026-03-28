@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
+        <div class="p-6 border-b border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="w-9 h-9 bg-emerald-500 rounded-2xl flex items-center justify-center text-white font-bold text-xl">F</div>
+                <h1 class="text-2xl font-semibold tracking-tight">FinTrackAI</h1>
+            </div>
+            <p class="text-emerald-400 text-sm mt-1">powered by Grok</p>
+        </div>
+        
+        <nav class="flex-1 p-4 space-y-2">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-2xl bg-gray-800 text-white font-medium">
+                <span class="text-xl">📊</span> Dashboard
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-gray-800 transition-colors">
+                <span class="text-xl">📋</span> Transactions
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-gray-800 transition-colors">
+                <span class="text-xl">📈</span> Reports
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-2xl hover:bg-gray-800 transition-colors">
+                <span class="text-xl">🤖</span> AI Insights
+            </a>
+        </nav>
+        
+        <div class="p-4 border-t border-gray-800">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center text-sm font-bold">👤</div>
+                <div>
+                    <p class="font-medium">{{ current_user.full_name or current_user.email }}</p>
+                    <p class="text-xs text-gray-500">Premium User</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top Bar -->
+        <div class="h-16 border-b border-gray-800 bg-gray-900 px-8 flex items-center justify-between">
+            <h2 class="text-2xl font-semibold">Good evening, {{ current_user.full_name or 'there' }} 👋</h2>
+            <div class="flex items-center gap-6">
+                <button onclick="logout()" 
+                        class="px-6 py-2 bg-red-500 hover:bg-red-600 rounded-2xl text-sm font-medium transition-colors">
+                    Logout
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard Body -->
+        <div class="flex-1 p-8 overflow-auto">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Cards -->
+                <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6">
+                    <p class="text-gray-400 text-sm">Total Balance</p>
+                    <p id="balance" class="text-5xl font-semibold text-emerald-400 mt-2">$12,487.32</p>
+                    <p class="text-emerald-400 text-sm mt-4 flex items-center gap-1">↑ 4.2% this month</p>
+                </div>
+                <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6">
+                    <p class="text-gray-400 text-sm">Income</p>
+                    <p id="income" class="text-5xl font-semibold text-white mt-2">$4,820</p>
+                    <p class="text-emerald-400 text-sm mt-4 flex items-center gap-1">↑ 12% this month</p>
+                </div>
+                <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6">
+                    <p class="text-gray-400 text-sm">Expenses</p>
+                    <p id="expenses" class="text-5xl font-semibold text-red-400 mt-2">$2,940</p>
+                    <p class="text-red-400 text-sm mt-4 flex items-center gap-1">↓ 3% this month</p>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 mb-8">
+                <h3 class="font-semibold mb-4">Spending Trend • Last 30 Days</h3>
+                <canvas id="spendingChart" class="w-full h-80"></canvas>
+            </div>
+
+            <!-- Transactions Table + AI Chat -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Table -->
+                <div class="lg:col-span-2 bg-gray-900 border border-gray-800 rounded-3xl p-6">
+                    <div class="flex justify-between mb-4">
+                        <h3 class="font-semibold">Recent Transactions</h3>
+                        <button onclick="loadTransactions()" 
+                                class="text-emerald-400 text-sm hover:underline">Refresh</button>
+                    </div>
+                    <div id="transactions-table" class="overflow-x-auto"></div>
+                </div>
+
+                <!-- AI Chat Sidebar -->
+                <div class="bg-gray-900 border border-gray-800 rounded-3xl flex flex-col h-full">
+                    <div class="p-6 border-b border-gray-800 flex items-center gap-3">
+                        <span class="text-2xl">🤖</span>
+                        <div>
+                            <h3 class="font-semibold">Grok AI Finance Coach</h3>
+                            <p class="text-xs text-emerald-400">Ask anything about your money</p>
+                        </div>
+                    </div>
+                    
+                    <div id="chat-messages" class="flex-1 p-6 overflow-auto space-y-4 text-sm"></div>
+                    
+                    <div class="p-4 border-t border-gray-800">
+                        <form id="chat-form" class="flex gap-2">
+                            <input id="chat-input" type="text" 
+                                   class="flex-1 bg-gray-800 border border-gray-700 rounded-2xl px-4 py-3 focus:outline-none"
+                                   placeholder="What was my biggest expense last month?">
+                            <button type="submit"
+                                    class="bg-emerald-500 hover:bg-emerald-600 px-6 rounded-2xl font-medium">Send</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Chart
+let spendingChart;
+function initChart() {
+    const ctx = document.getElementById('spendingChart');
+    spendingChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['Mar 1','Mar 5','Mar 10','Mar 15','Mar 20','Mar 25','Mar 28'],
+            datasets: [{
+                label: 'Daily Spend',
+                data: [120, 80, 210, 45, 190, 130, 95],
+                borderColor: '#10b981',
+                tension: 0.4,
+                borderWidth: 3
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+}
+
+// Load transactions via HTMX + API
+async function loadTransactions() {
+    const tableHTML = await fetch('/transactions').then(r => r.text()); // we'll make this return HTML fragment
+    document.getElementById('transactions-table').innerHTML = tableHTML;
+}
+
+// Chat with Grok
+const chatForm = document.getElementById('chat-form');
+chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('chat-input');
+    const query = input.value.trim();
+    if (!query) return;
+
+    // Add user message
+    const messages = document.getElementById('chat-messages');
+    messages.innerHTML += `<div class="chat chat-end"><div class="chat-bubble bg-emerald-500">${query}</div></div>`;
+    input.value = '';
+
+    // Call our AI endpoint
+    const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query })
+    });
+    const data = await res.json();
+    
+    messages.innerHTML += `<div class="chat chat-start"><div class="chat-bubble bg-gray-800">${data.response}</div></div>`;
+    messages.scrollTop = messages.scrollHeight;
+});
+
+// Logout
+function logout() {
+    localStorage.removeItem('token');
+    window.location.href = '/';
+}
+
+window.onload = () => {
+    initChart();
+    loadTransactions();
+    // Auto-load balance etc. via API in real app
+};
+</script>
+{% endblock %}
