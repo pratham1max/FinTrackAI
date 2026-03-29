@@ -5,8 +5,8 @@
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-teal)
 ![Docker](https://img.shields.io/badge/Docker-ready-blue)
 
-**Live Demo**: [your-railway-link]  
-**Stars**: (watch them roll in)
+**Live Demo**: [railway-link]  
+**Stars**: (watch roll in)
 
 ## ✨ Features
 - Professional dark-mode dashboard (Tailwind + DaisyUI)
