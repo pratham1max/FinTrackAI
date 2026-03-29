@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrackAI - Register</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-gray-100">
+<div class="min-h-screen bg-gray-950 flex items-center justify-center">
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-10 w-full max-w-md">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center text-white font-bold text-3xl">F</div>
+            <h1 class="text-4xl font-semibold tracking-tighter">FinTrackAI</h1>
+        </div>
+        <p class="text-emerald-400 mb-8">Create your account to start tracking</p>
+
+        <form id="register-form" class="space-y-6">
+            <div>
+                <label class="text-sm text-gray-400 block mb-2">Full Name</label>
+                <input id="full_name" type="text" 
+                       class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-500"
+                       placeholder="John Doe" required>
+            </div>
+            <div>
+                <label class="text-sm text-gray-400 block mb-2">Email</label>
+                <input id="email" type="email" 
+                       class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-500"
+                       placeholder="you@email.com" required>
+            </div>
+            <div>
+                <label class="text-sm text-gray-400 block mb-2">Password</label>
+                <input id="password" type="password" 
+                       class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-500"
+                       placeholder="••••••••" required>
+            </div>
+            <div>
+                <label class="text-sm text-gray-400 block mb-2">Confirm Password</label>
+                <input id="password_confirm" type="password" 
+                       class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-500"
+                       placeholder="••••••••" required>
+            </div>
+
+            <div id="error" class="text-red-400 text-sm hidden"></div>
+
+            <button type="submit"
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-2xl font-semibold text-lg transition-colors">
+                Create Account
+            </button>
+        </form>
+
+        <p class="text-center text-sm text-gray-500 mt-6">
+            Already have an account? 
+            <a href="/login" class="text-emerald-400 hover:underline">Sign in</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const full_name = document.getElementById('full_name').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const password_confirm = document.getElementById('password_confirm').value;
+        const errorDiv = document.getElementById('error');
+
+        if (password !== password_confirm) {
+            errorDiv.textContent = 'Passwords do not match';
+            errorDiv.classList.remove('hidden');
+            return;
+        }
+
+        try {
+            const res = await fetch('/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ full_name, email, password })
+            });
+
+            if (res.ok) {
+                alert('Account created! Please log in.');
+                window.location.href = '/login';
+            } else {
+                const error = await res.json();
+                errorDiv.textContent = error.detail || 'Registration failed';
+                errorDiv.classList.remove('hidden');
+            }
+        } catch (e) {
+            errorDiv.textContent = 'Network error: ' + e.message;
+            errorDiv.classList.remove('hidden');
+        }
+    });
+</script>
+</body>
+</html>

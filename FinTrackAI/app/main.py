@@ -1,21 +1,22 @@
-from app.routers.pages import router as pages_router
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+from fastapi.responses import RedirectResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-from app.core.database import engine, Base
-from app.routers import auth, transactions
+
+from app.routers.auth import router as auth_router
+from app.routers.transactions import router as transactions_router
+from app.routers.ai import router as ai_router
+from app.routers.web import router as web_router
+from app.routers.pages import router as pages_router
 
 app = FastAPI(
     title="FinTrackAI",
-    description="AI-Powered Personal Finance Tracker with Grok RAG Chatbot",
+    description="AI-Powered Personal Finance Tracker with Grok",
     version="1.0.0"
 )
 
-# Mount static & templates (we'll use them soon)
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
-templates = Jinja2Templates(directory="app/templates")
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,14 +26,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(transactions.router, prefix="/transactions", tags=["transactions"])
+app.include_router(auth_router, prefix="/auth", tags=["auth"])
+app.include_router(transactions_router, prefix="/transactions", tags=["transactions"])
+app.include_router(ai_router, prefix="/api", tags=["ai"])
+app.include_router(web_router, tags=["web"])
 app.include_router(pages_router, tags=["pages"])
 
 @app.get("/")
 async def root():
-    return {"message": "FinTrackAI API is running! 🚀 Visit /docs"}
+    return RedirectResponse("/dashboard")   # ← Changed to dashboard so you see the site immediately
 
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)

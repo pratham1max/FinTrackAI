@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from fastapi.responses import HTMLResponse
+from fastapi import APIRouter, Depends, Request
+from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.core.security import get_current_user
@@ -6,9 +8,12 @@ from app.services.transaction_service import TransactionService
 from app.schemas.transaction import TransactionCreate, TransactionResponse
 from app.models.user import User
 from app.services.ai_service import AIService
+import os
 
 router = APIRouter()
 
+# Setup templates
+templates = Jinja2Templates(directory="app/templates")
 def get_transaction_service(db: AsyncSession = Depends(get_db)):
     return TransactionService(db)
 
@@ -41,3 +46,11 @@ async def get_transactions(
 ):
     return await service.get_transactions(current_user.id)
 
+@router.get("/html", response_class=HTMLResponse)
+async def get_transactions_html(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    transactions = await TransactionService(db).get_transactions(current_user.id)
+    return templates.TemplateResponse("fragments/transactions.html", request=request, transactions=transactions)

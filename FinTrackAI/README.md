@@ -1,1 +1,29 @@
-# FinTrackAI
+# FinTrackAI — AI-Powered Personal Finance Tracker
+
+![FastAPI](https://img.shields.io/badge/FastAPI-0.115-blue)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
+![Grok](https://img.shields.io/badge/Grok-xAI-purple)
+![Tailwind](https://img.shields.io/badge/Tailwind-4.0-teal)
+![Docker](https://img.shields.io/badge/Docker-ready-blue)
+
+**Live Demo**: [your-railway-link]  
+**Stars**: (watch them roll in)
+
+## ✨ Features
+- Professional dark-mode dashboard (Tailwind + DaisyUI)
+- Grok-powered **auto-categorization** of expenses
+- **RAG Chatbot** — asks questions about your entire financial history
+- Async PostgreSQL + pgvector for semantic search
+- JWT auth + clean architecture (repositories + services)
+- Zero JavaScript frameworks — just HTMX
+
+## Architecture
+```mermaid
+graph TD
+    A[FastAPI Routers] --> B[Services]
+    B --> C[Repositories]
+    C --> D[(PostgreSQL + pgvector)]
+    B --> E[Grok API via LangChain]
+    E --> D
+    F[HTMX + Tailwind Dashboard] --> A
+    G[AI Chat] --> E

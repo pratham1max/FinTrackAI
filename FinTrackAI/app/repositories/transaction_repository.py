@@ -1,4 +1,4 @@
-from sqlalchemy import select, desc
+from sqlalchemy import select, desc, delete
 from app.models.transaction import Transaction
 from app.repositories.base import BaseRepository
 from datetime import datetime
@@ -31,7 +31,7 @@ class TransactionRepository(BaseRepository):
     async def delete(self, transaction_id: int, user_id: int):
         transaction = await self.get_by_id(transaction_id, user_id)
         if transaction:
-            await self.db.delete(transaction)
+            self.db.delete(transaction)
             await self.db.commit()
             return True
         return False

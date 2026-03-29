@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrackAI - Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 text-gray-100">
+<div class="min-h-screen bg-gray-950 flex items-center justify-center">
+    <div class="bg-gray-900 border border-gray-800 rounded-3xl p-10 w-full max-w-md">
+        <div class="flex items-center gap-3 mb-8">
+            <div class="w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center text-white font-bold text-3xl">F</div>
+            <h1 class="text-4xl font-semibold tracking-tighter">FinTrackAI</h1>
+        </div>
+        <p class="text-emerald-400 mb-8">Sign in to manage your money with Grok AI</p>
+
+        <form id="login-form" class="space-y-6">
+            <div>
+                <label class="text-sm text-gray-400 block mb-2">Email</label>
+                <input id="email" type="email" 
+                       class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-500"
+                       placeholder="you@email.com" required>
+            </div>
+            <div>
+                <label class="text-sm text-gray-400 block mb-2">Password</label>
+                <input id="password" type="password" 
+                       class="w-full bg-gray-800 border border-gray-700 rounded-2xl px-5 py-4 focus:outline-none focus:border-emerald-500"
+                       placeholder="••••••••" required>
+            </div>
+
+            <div id="error" class="text-red-400 text-sm hidden"></div>
+
+            <button type="submit"
+                    class="w-full bg-emerald-500 hover:bg-emerald-600 py-4 rounded-2xl font-semibold text-lg transition-colors">
+                Sign In
+            </button>
+        </form>
+
+        <p class="text-center text-sm text-gray-500 mt-6">
+            Don't have an account? 
+            <a href="/register" class="text-emerald-400 hover:underline">Create one free</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const errorDiv = document.getElementById('error');
+
+        try {
+            const res = await fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ username: email, password: password })
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                localStorage.setItem('token', data.access_token);
+                window.location.href = '/dashboard';
+            } else {
+                const error = await res.json();
+                errorDiv.textContent = error.detail || 'Login failed';
+                errorDiv.classList.remove('hidden');
+            }
+        } catch (e) {
+            errorDiv.textContent = 'Network error: ' + e.message;
+            errorDiv.classList.remove('hidden');
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
 from app.core.database import get_db
 from fastapi import Depends
 from fastapi.security import OAuth2PasswordBearer
@@ -39,7 +40,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
         raise credentials_exception
 
     from app.models.user import User
-    user = await db.get(User, {"email": email})  # Simple lookup by email for now
+    result = await db.execute(select(User).where(User.email == email))
+    user = result.scalar_one_or_none()
     if user is None:
         raise credentials_exception
     return user

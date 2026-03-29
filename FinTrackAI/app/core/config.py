@@ -4,7 +4,7 @@ from typing import Optional
 class Settings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/fintrackai"
     XAI_API_KEY: str
-    SECRET_KEY: str = "supersecretkeyforjwtchangeinproduction2026"
+    SECRET_KEY: str  # Must be set via environment variable
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 

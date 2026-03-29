@@ -14,5 +14,15 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db:5432/fintrackai
+      XAI_API_KEY: ${XAI_API_KEY}
+    depends_on:
+      - db
+
 volumes:
   pgdata:

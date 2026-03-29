@@ -1,12 +1,12 @@
 import os
 from openai import AsyncOpenAI
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_community.vectorstores import PGVector
+from langchain_openai import ChatOpenAI
 from langchain.prompts import ChatPromptTemplate
 from app.core.config import settings
 from app.models.transaction import Transaction
 from sqlalchemy import text
 import json
+from sentence_transformers import SentenceTransformer
 
 class AIService:
     def __init__(self, db):
@@ -16,32 +16,18 @@ class AIService:
             base_url="https://api.x.ai/v1"
         )
         self.llm = ChatOpenAI(
-            model="grok-3",                    # or "grok-4" if available in 2026
+            model="grok-3",
             openai_api_key=settings.XAI_API_KEY,
             openai_api_base="https://api.x.ai/v1",
             temperature=0.7
         )
-        # Embeddings (local + fast)
-        self.embeddings = OpenAIEmbeddings(
-            model="text-embedding-3-small",    # works with Grok-compatible
-            openai_api_key=settings.XAI_API_KEY,
-            openai_api_base="https://api.x.ai/v1"
-        )
-        # PGVector connection for RAG
-        self.vectorstore = PGVector(
-            embeddings=self.embeddings,
-            collection_name="transactions",
-            connection_string=settings.DATABASE_URL.replace("+asyncpg", "+psycopg2"),
-            use_jsonb=True
-        )
+        # Use local embeddings model (sentence-transformers) instead of OpenAI
+        self.embeddings_model = SentenceTransformer('all-MiniLM-L6-v2')
 
     async def generate_embedding(self, text: str) -> list[float]:
-        """Generate embedding for a transaction description"""
-        response = await self.client.embeddings.create(
-            input=text,
-            model="text-embedding-3-small"
-        )
-        return response.data[0].embedding
+        """Generate embedding for a transaction description using local model"""
+        embedding = self.embeddings_model.encode(text, convert_to_tensor=False)
+        return embedding.tolist()
 
     async def auto_categorize(self, description: str, amount: float) -> str:
         """Grok-powered auto categorization"""
@@ -70,14 +56,29 @@ class AIService:
         if not transactions:
             return "No transactions yet. Add some to start chatting!"
 
-        # Vector search (pgvector magic)
-        docs = [f"Amount: {t['amount']} | Desc: {t['description']} | Category: {t['category']} | Date: {t['date']}" 
-                for t in transactions]
+        # Generate embedding for query
+        query_embedding = await self.generate_embedding(query)
         
-        # Retrieve top 5 similar
-        retrieved = self.vectorstore.similarity_search(query, k=5, filter={"user_id": user_id})
+        # Simple similarity search using cosine similarity
+        import numpy as np
+        from sklearn.metrics.pairwise import cosine_similarity
         
-        context = "\n".join([doc.page_content for doc in retrieved])
+        transaction_embeddings = []
+        for t in transactions:
+            emb = await self.generate_embedding(f"{t['description']} {t['category']}")
+            transaction_embeddings.append(emb)
+        
+        # Calculate similarities
+        similarities = cosine_similarity([query_embedding], transaction_embeddings)[0]
+        top_indices = np.argsort(similarities)[-5:][::-1]  # Top 5
+        
+        # Build context from top similar transactions
+        context_lines = []
+        for idx in top_indices:
+            t = transactions[idx]
+            context_lines.append(f"Amount: ${t['amount']} | {t['description']} | Category: {t['category']} | Date: {t['date']}")
+        
+        context = "\n".join(context_lines)
         
         prompt = ChatPromptTemplate.from_template("""
         You are a helpful financial advisor.
