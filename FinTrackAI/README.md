@@ -10,7 +10,6 @@
 
 ## ✨ Features
 - Professional dark-mode dashboard (Tailwind + DaisyUI)
-- Grok-powered **auto-categorization** of expenses
 - **RAG Chatbot** — asks questions about your entire financial history
 - Async PostgreSQL + pgvector for semantic search
 - JWT auth + clean architecture (repositories + services)
@@ -22,7 +21,7 @@ graph TD
     A[FastAPI Routers] --> B[Services]
     B --> C[Repositories]
     C --> D[(PostgreSQL + pgvector)]
-    B --> E[Grok API via LangChain]
+    B --> E[LangChain]
     E --> D
     F[HTMX + Tailwind Dashboard] --> A
     G[AI Chat] --> E
