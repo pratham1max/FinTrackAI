@@ -2,7 +2,6 @@
 
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-blue)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
-![Grok](https://img.shields.io/badge/Grok-xAI-purple)
 ![Tailwind](https://img.shields.io/badge/Tailwind-4.0-teal)
 ![Docker](https://img.shields.io/badge/Docker-ready-blue)
 
